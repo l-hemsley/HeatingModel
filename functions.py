@@ -23,5 +23,6 @@ class output_surface_parameters:
         self.N_cells=N_cells
         self.initial_T=initial_T
         self.cell_length=self.thickness/self.N_cells
-        self.volume_cell=self.thickness*self.area
+        self.volume_cell=self.cell_length*self.area
         self.T_array=np.full([self.N_cells ],self.initial_T )
+        self.Qout_array=np.full([self.N_cells ],0 )
