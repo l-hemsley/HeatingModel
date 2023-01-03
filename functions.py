@@ -31,6 +31,20 @@ def calculate_Tchange_surface(output_surface,t_step,Qin):
     DT=(Qin-Qout)*t_step/(densityC*volume_cell)
     return DT
 
+def do_surfaces_in_room(output_surface_array,T_room,t_step):
+    Qout_room_total=0
+    for output_surface in output_surface_array:
+        #calculate Qout for room/surface boundary - CONVECTIVE
+        Qout_room_to_surface=calculate_Qout_convective(output_surface.HTC,output_surface.area,T_room,output_surface.T_array[0])
+        Qout_room_total=Qout_room_total+Qout_room_to_surface  
+        #calculate Qout/Qin for interior of surface
+        output_surface.Qout_array=calculate_Qout_conductive_surface(output_surface)
+        Qin_xarray=np.append(Qout_room_to_surface,output_surface.Qout_array[0:output_surface.N_cells-2])
+        #update surface interior temperatures
+        output_surface.T_array=output_surface.T_array+np.append(calculate_Tchange_surface(output_surface,t_step,Qin_xarray),[0])
+
+    return [Qout_room_total,output_surface_array]
+
 class output_surface_parameters:
     #class related to the input parameters on the DMD
     def __init__(self,THcond,HTC,densityC,thickness,area,N_cells,initial_T):
@@ -45,3 +59,5 @@ class output_surface_parameters:
         self.volume_cell=self.cell_length*self.area
         self.T_array=np.full([self.N_cells ],self.initial_T )
         self.Qout_array=np.full([self.N_cells ],0 )
+     
+    
