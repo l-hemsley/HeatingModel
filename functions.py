@@ -1,14 +1,33 @@
 import numpy as np
 
-def calculate_Qout_conductive(THcond,area_cell,T1,T2,length_cell):
-    Qout=THcond*area_cell*(T1-T2)/length_cell
-    return Qout
 
 def calculate_Qout_convective(HTC,area_cell,T1,T2):
     Qout=HTC*area_cell*(T1-T2)
     return Qout
 
+def calculate_Qout_conductive(THcond,area_cell,T1,T2,length_cell):
+    Qout=THcond*area_cell*(T1-T2)/length_cell
+    return Qout
+
+def calculate_Qout_conductive_surface(output_surface):
+    N_cells=np.size(output_surface.T_array)
+    THcond=output_surface.THcond
+    area=output_surface.area
+    T1=output_surface.T_array[0:output_surface.N_cells-1]
+    T2=output_surface.T_array[1:output_surface.N_cells]
+    cell_length=output_surface.cell_length
+    Qout=THcond*area*(T1-T2)/cell_length
+    return Qout
+
 def calculate_Tchange(Qin,Qout,t_step,densityC,volume_cell):
+    DT=(Qin-Qout)*t_step/(densityC*volume_cell)
+    return DT
+
+def calculate_Tchange_surface(output_surface,t_step,Qin):
+    N_cells=np.size(output_surface.T_array)
+    Qout=output_surface.Qout_array
+    densityC=output_surface.densityC
+    volume_cell=output_surface.volume_cell
     DT=(Qin-Qout)*t_step/(densityC*volume_cell)
     return DT
 
