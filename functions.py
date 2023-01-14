@@ -36,6 +36,7 @@ def do_surfaces_in_room(output_surface_array,T_room,t_step):
     for output_surface in output_surface_array:
         #calculate Qout for room/surface boundary - CONVECTIVE
         Qout_room_to_surface=calculate_Qout_convective(output_surface.HTC,output_surface.area,T_room,output_surface.T_array[0])
+        #Qin_rad_to_surface=calculate_Qout_radiative(output_surface.HTC,output_surface.area,T_room,output_surface.T_array[0])
         Qout_room_total=Qout_room_total+Qout_room_to_surface  
         #calculate Qout/Qin for interior of surface
         output_surface.Qout_array=calculate_Qout_conductive_surface(output_surface)
