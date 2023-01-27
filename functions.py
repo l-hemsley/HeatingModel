@@ -53,7 +53,7 @@ class output_surface_parameters:
         self.THcond = THcond  #can be array for multi material
         self.HTconv= HTconv
         self.densityC= densityC # array for multi material
-        self.thickness =thickness
+        self.thickness =thickness #this is TOTAL THICKNESS
         self.area=area
         self.N_cells=N_cells
         self.initial_T=initial_T
