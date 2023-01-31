@@ -1,9 +1,10 @@
-####this is a nightmare and needs lots of tidying!
+####this is a nightmare and needs lots of tidying! Put in loops please
 
 
 import pandas as pd
 import numpy as np
 from functions import *
+
 
 def  CompositeMaterials(surface_data,material):
     N_cells_internal=int(surface_data.iloc[3,1]/0.5)
@@ -16,7 +17,7 @@ def  CompositeMaterials(surface_data,material):
     THcond=np.append(THcond_internal,THcond_external)
     densityC=np.append(densityC_internal,densityC_external)
     N_cells=N_cells_internal+N_cells_external
-    thickness=(surface_data.iloc[3,1]+surface_data.iloc[5,1])/100 #convert to m
+    thickness=(surface_data.iloc[3,1]+surface_data.iloc[5,1])/100 #total thickness convert to m
     return  THcond[0:N_cells-1],densityC[0:N_cells-1],N_cells, thickness
 
 def ReadInParameters(filename):
@@ -30,23 +31,23 @@ def ReadInParameters(filename):
     upper_data_parameters_room=upper_data.iloc[:7,1:2].to_numpy()
     upper=room_parameters(*upper_data_parameters_room)
 
-    surface_data=data.iloc[7:13,:2]
+    surface_data=data.iloc[7:14,:2]
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
 
     [THcond,densityC,N_cells,thickness]=CompositeMaterials(surface_data,material)
-    roof_upper=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0])
+    roof_upper=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0],surface_data.iloc[6,1])
     ##
-    surface_data=data.iloc[7:13,2:4]
+    surface_data=data.iloc[7:14,2:4]
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
 
     [THcond,densityC,N_cells,thickness]=CompositeMaterials(surface_data,material)
-    wall_upper=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0])
+    wall_upper=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0],surface_data.iloc[6,1])
 
 
     ## Windows
-    surface_data=data.iloc[7:13,4:6]
+    surface_data=data.iloc[7:14,4:6]
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
 
@@ -54,7 +55,7 @@ def ReadInParameters(filename):
     THcond=np.full((1, N_cells_internal), material.loc[:,'Thermal conductivity'].to_numpy())
     densityC=np.full((1, N_cells_internal), material.loc[:,'DensityC'].to_numpy())
     thickness=0.01 #1cm for windows
-    windows_upper=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells_internal,upper_data_parameters_room[0])
+    windows_upper=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells_internal,upper_data_parameters_room[0],surface_data.iloc[4,1])
 
     output_surface_array_upper=[roof_upper,wall_upper,windows_upper]
 
@@ -63,23 +64,23 @@ def ReadInParameters(filename):
     middle_data_parameters_room=middle_data.iloc[:7,1:2].to_numpy()
     middle=room_parameters(*middle_data_parameters_room)
 
-    surface_data=data.iloc[25:31,:2]
+    surface_data=data.iloc[25:32,:2]
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
 
     [THcond,densityC,N_cells,thickness]=CompositeMaterials(surface_data,material)
-    roof_middle=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0])
+    roof_middle=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0],surface_data.iloc[6,1])
 
     ##
-    surface_data=data.iloc[25:31,2:4]
+    surface_data=data.iloc[25:32,2:4]
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
 
     [THcond,densityC,N_cells,thickness]=CompositeMaterials(surface_data,material)
-    wall_middle=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0])
+    wall_middle=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0],surface_data.iloc[6,1])
 
     ## windows
-    surface_data=data.iloc[25:31,4:6]
+    surface_data=data.iloc[25:32,4:6]
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
 
@@ -87,39 +88,38 @@ def ReadInParameters(filename):
     THcond=np.full((1, N_cells_internal), material.loc[:,'Thermal conductivity'].to_numpy())
     densityC=np.full((1, N_cells_internal), material.loc[:,'DensityC'].to_numpy())
     thickness=0.01
-    windows_middle=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells_internal,middle_data_parameters_room[0])
+    windows_middle=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells_internal,middle_data_parameters_room[0],surface_data.iloc[4,1])
 
     output_surface_array_middle=[roof_middle,wall_middle,windows_middle]
 
-    #T_room,Qin,volume,densityC,U,airchanges_per_hour):
     #//////////// lower room /////////////////////
     lower_data=data.iloc[36:51,:6]
 
     lower_data_parameters_room=lower_data.iloc[:7,1:2].to_numpy()
     lower=room_parameters(*lower_data_parameters_room)
 
-    surface_data=data.iloc[43:49,:2]
+    surface_data=data.iloc[43:50,:2]
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
 
     [THcond,densityC,N_cells,thickness]=CompositeMaterials(surface_data,material)
-    roof_lower=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0])
+    roof_lower=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0],surface_data.iloc[6,1])
     
-    surface_data=data.iloc[43:49,2:4]
+    surface_data=data.iloc[43:50,2:4]
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
 
     [THcond,densityC,N_cells,thickness]=CompositeMaterials(surface_data,material)
-    wall_lower=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0])
+    wall_lower=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0],surface_data.iloc[6,1])
 
     ##
-    surface_data=data.iloc[43:49,4:6]
+    surface_data=data.iloc[43:50,4:6]
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
 
     [THcond,densityC,N_cells,thickness]=CompositeMaterials(surface_data,material)
 
-    floor=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0])
+    floor=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,upper_data_parameters_room[0],surface_data.iloc[6,1])
 
     ## windows
     surface_data=data.iloc[43:49,6:8]
@@ -130,7 +130,7 @@ def ReadInParameters(filename):
     THcond=np.full((1, N_cells_internal), material.loc[:,'Thermal conductivity'].to_numpy())
     densityC=np.full((1, N_cells_internal), material.loc[:,'DensityC'].to_numpy())
     thickness=0.01
-    windows_lower=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells_internal,upper_data_parameters_room[0])
+    windows_lower=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells_internal,upper_data_parameters_room[0],surface_data.iloc[4,1])
 
     output_surface_array_lower=[roof_lower,wall_lower,floor,windows_lower]
 
