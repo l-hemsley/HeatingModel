@@ -61,7 +61,7 @@ class output_surface_parameters:
         self.volume_cell=self.cell_length*self.area
         self.T_array=np.full([self.N_cells ],self.initial_T )
         self.Qout_array=np.full([self.N_cells ],0 )
-        self.Qrad=radiant_heat/self.area
+        self.Qrad=radiant_heat
      
     
 class room_parameters:
