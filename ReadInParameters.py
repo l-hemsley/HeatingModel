@@ -33,8 +33,8 @@ def WindowsSurface(surface_data,materials_data,room):
     #single glazing
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
-    N_cells=20 #not sure about this??
     thickness=surface_data.iloc[5,1]
+    N_cells=10
     window=output_surface_parameters(material.loc[:,'Thermal conductivity'].to_numpy(),material.loc[:,'HTCconv'].to_numpy(), material.loc[:,'DensityC'].to_numpy(),thickness,surface_data.iloc[1,1],N_cells,room.T_room,surface_data.iloc[4,1])
     return window
 
@@ -44,7 +44,7 @@ def ReadInParameters(filename):
 
 #//////////// upper room /////////////////////
     #T_room,Qin,volume,densityC,U,airchanges_per_hour):
-    upper_data=data.iloc[:13,:6]
+    upper_data=data.iloc[:7,:6]
     upper_data_parameters_room=upper_data.iloc[:7,1:2].to_numpy()
     upper=room_parameters(*upper_data_parameters_room)
     # do composite surfaces
@@ -52,14 +52,16 @@ def ReadInParameters(filename):
     roof_upper=CompositeMaterialSurface(surface_data, materials_data,upper)
     surface_data=data.iloc[7:14,2:4]
     wall_upper=CompositeMaterialSurface(surface_data, materials_data,upper)
+    surface_data=data.iloc[0:7,4:6]
+    hot_spot_upper=CompositeMaterialSurface(surface_data, materials_data,upper)
     ## Windows
     surface_data=data.iloc[7:14,4:6]
     windows_upper=WindowsSurface(surface_data,materials_data,upper)
 
-    output_surface_array_upper=[roof_upper,wall_upper,windows_upper]
+    output_surface_array_upper=[roof_upper,wall_upper,windows_upper,hot_spot_upper]
 
 #//////////// middle room /////////////////////
-    middle_data=data.iloc[18:32,:6]
+    middle_data=data.iloc[18:25,:6]
     middle_data_parameters_room=middle_data.iloc[:7,1:2].to_numpy()
     middle=room_parameters(*middle_data_parameters_room)
 # do composite surfaces
@@ -67,14 +69,16 @@ def ReadInParameters(filename):
     roof_middle=CompositeMaterialSurface(surface_data, materials_data,middle)
     surface_data=data.iloc[25:32,2:4]
     wall_middle=CompositeMaterialSurface(surface_data, materials_data,middle)
+    surface_data=data.iloc[18:32,4:6]
+    hot_spot_middle=CompositeMaterialSurface(surface_data, materials_data,middle)
     ## windows
     surface_data=data.iloc[25:32,4:6]
     windows_middle=WindowsSurface(surface_data,materials_data,middle)
 
-    output_surface_array_middle=[roof_middle,wall_middle,windows_middle]
+    output_surface_array_middle=[roof_middle,wall_middle,windows_middle,hot_spot_middle]
 
 #//////////// lower room /////////////////////
-    lower_data=data.iloc[36:51,:6]
+    lower_data=data.iloc[36:43,:6]
     lower_data_parameters_room=lower_data.iloc[:7,1:2].to_numpy()
     lower=room_parameters(*lower_data_parameters_room)
 #do composite surfaces
@@ -84,10 +88,12 @@ def ReadInParameters(filename):
     wall_lower=CompositeMaterialSurface(surface_data, materials_data,lower)
     surface_data=data.iloc[43:50,4:6]
     floor=CompositeMaterialSurface(surface_data, materials_data,lower)
+    surface_data=data.iloc[36:43,4:6]
+    hot_spot_lower=CompositeMaterialSurface(surface_data, materials_data,lower)
     ## windows
     surface_data=data.iloc[43:49,6:8]
     windows_lower=WindowsSurface(surface_data,materials_data,lower)
-    output_surface_array_lower=[roof_lower,wall_lower,floor,windows_lower]
+    output_surface_array_lower=[roof_lower,wall_lower,floor,windows_lower,hot_spot_lower]
     
 # target temp settings
     temperature_data=data.iloc[:4,7:10]
