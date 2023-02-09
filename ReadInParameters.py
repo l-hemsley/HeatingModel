@@ -1,5 +1,4 @@
-####this is a nightmare and needs lots of tidying! Put in loops please
-
+#### BIT CLUNKY STILL :/
 
 import pandas as pd
 import numpy as np
@@ -99,7 +98,5 @@ def ReadInParameters(filename):
     temperature_data=data.iloc[:4,7:10]
     T_target=temperature_data.iloc[1,1]
     T_exterior=temperature_data.iloc[0,1]
-    target_level=temperature_data.iloc[2,1]
-
     
-    return [lower,middle,upper,output_surface_array_lower,output_surface_array_middle,output_surface_array_upper,T_target,T_exterior,target_level]
+    return [lower,middle,upper,output_surface_array_lower,output_surface_array_middle,output_surface_array_upper,T_target,T_exterior]
