@@ -1,4 +1,4 @@
-#### BIT CLUNKY STILL :/
+#### BIT CLUNKY STILL :/ need more loops and not to repeat stuff e.g. always reusing room T
 
 import pandas as pd
 import numpy as np
@@ -24,9 +24,27 @@ def  CompositeMaterialSurface(surface_data, materials_data,room):
     densityC=np.append(densityC_internal,densityC_external)
     N_cells=N_cells_internal+N_cells_external
     thickness=(surface_data.iloc[3,1]+surface_data.iloc[5,1])/100 #total thickness convert to m
-    #input params to surface class
     surface=output_surface_parameters(THcond[0:N_cells-1],material.loc[:,'HTCconv'].to_numpy(),densityC[0:N_cells-1],thickness,surface_data.iloc[1,1],N_cells,room.T_room,surface_data.iloc[6,1])
     return surface
+
+def Internals(surface_data, materials_data,room): #we can treat internals as just normal surface class
+    #internal section
+    internal_type=surface_data.iloc[2,1]
+    material=materials_data.loc[materials_data['Material'] == internal_type]
+    N_cells=int(surface_data.iloc[3,1]/cell_length)
+    THcond=material.loc[:,'Thermal conductivity'].to_numpy()
+    densityC=material.loc[:,'DensityC'].to_numpy()
+    thickness=(surface_data.iloc[3,1])/100 #total thickness convert to m
+    internal=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,room.T_room,surface_data.iloc[4,1])
+    return internal
+
+def HotSpot(surface_data,materials_data):
+    internal_type=surface_data.iloc[2,1]
+    material=materials_data.loc[materials_data['Material'] == internal_type]
+    area=surface_data.iloc[1,1]
+    T=surface_data.iloc[3,1]
+    hotspot=hotspot_parameters(material.loc[:,'HTCconv'].to_numpy(),area,T)
+    return hotspot
 
 def WindowsSurface(surface_data,materials_data,room):
     #single glazing
@@ -51,13 +69,17 @@ def ReadInParameters(filename):
     roof_upper=CompositeMaterialSurface(surface_data, materials_data,upper)
     surface_data=data.iloc[7:14,2:4]
     wall_upper=CompositeMaterialSurface(surface_data, materials_data,upper)
-    surface_data=data.iloc[0:7,4:6]
-    hot_spot_upper=CompositeMaterialSurface(surface_data, materials_data,upper)
     ## Windows
     surface_data=data.iloc[7:14,4:6]
     windows_upper=WindowsSurface(surface_data,materials_data,upper)
+        #HOTSPOT
+    surface_data=data.iloc[0:7,4:6]
+    hotspot_upper=HotSpot(surface_data,materials_data)
+    #internals
+    surface_data=data.iloc[0:7,2:4]
+    internals_upper=Internals(surface_data,materials_data,upper)
 
-    output_surface_array_upper=[roof_upper,wall_upper,windows_upper,hot_spot_upper]
+    output_surface_array_upper=[roof_upper,wall_upper,windows_upper]
 
 #//////////// middle room /////////////////////
     middle_data=data.iloc[18:25,:6]
@@ -68,13 +90,17 @@ def ReadInParameters(filename):
     roof_middle=CompositeMaterialSurface(surface_data, materials_data,middle)
     surface_data=data.iloc[25:32,2:4]
     wall_middle=CompositeMaterialSurface(surface_data, materials_data,middle)
-    surface_data=data.iloc[18:32,4:6]
-    hot_spot_middle=CompositeMaterialSurface(surface_data, materials_data,middle)
     ## windows
     surface_data=data.iloc[25:32,4:6]
     windows_middle=WindowsSurface(surface_data,materials_data,middle)
+    #HOTSPOT
+    surface_data=data.iloc[18:32,4:6]
+    hotspot_middle=HotSpot(surface_data,materials_data)
+    #internals
+    surface_data=data.iloc[18:25,2:4]
+    internals_middle=Internals(surface_data,materials_data,middle)
 
-    output_surface_array_middle=[roof_middle,wall_middle,windows_middle,hot_spot_middle]
+    output_surface_array_middle=[roof_middle,wall_middle,windows_middle]
 
 #//////////// lower room /////////////////////
     lower_data=data.iloc[36:43,:6]
@@ -87,16 +113,25 @@ def ReadInParameters(filename):
     wall_lower=CompositeMaterialSurface(surface_data, materials_data,lower)
     surface_data=data.iloc[43:50,4:6]
     floor=CompositeMaterialSurface(surface_data, materials_data,lower)
-    surface_data=data.iloc[36:43,4:6]
-    hot_spot_lower=CompositeMaterialSurface(surface_data, materials_data,lower)
     ## windows
     surface_data=data.iloc[43:49,6:8]
     windows_lower=WindowsSurface(surface_data,materials_data,lower)
-    output_surface_array_lower=[roof_lower,wall_lower,floor,windows_lower,hot_spot_lower]
+    output_surface_array_lower=[roof_lower,wall_lower,floor,windows_lower]
+    #HOTSPOT
+    surface_data=data.iloc[36:43,4:6]
+    hotspot_lower=HotSpot(surface_data,materials_data)
+    #internals
+    surface_data=data.iloc[36:43,2:4]
+    internals_lower=Internals(surface_data,materials_data,lower)
     
 # target temp settings
     temperature_data=data.iloc[:4,7:10]
     T_target=temperature_data.iloc[1,1]
     T_exterior=temperature_data.iloc[0,1]
     
-    return [lower,middle,upper,output_surface_array_lower,output_surface_array_middle,output_surface_array_upper,T_target,T_exterior]
+    hotspots=[hotspot_upper,hotspot_middle,hotspot_lower]
+    internals=[internals_upper,internals_middle,internals_lower]
+    rooms=[upper,middle,lower]
+    output_surfaces=[output_surface_array_lower,output_surface_array_middle,output_surface_array_upper]
+    
+    return [rooms,output_surfaces,T_target,T_exterior,hotspots,internals]
