@@ -38,12 +38,25 @@ def Internals(surface_data, materials_data,room): #we can treat internals as jus
     internal=output_surface_parameters(THcond,material.loc[:,'HTCconv'].to_numpy(),densityC,thickness,surface_data.iloc[1,1],N_cells,room.T_room,surface_data.iloc[4,1])
     return internal
 
-def HotSpot(surface_data,materials_data):
+def HotSpot(surface_data,materials_data,room):
+    #internal section
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
-    area=surface_data.iloc[1,1]
-    T=surface_data.iloc[3,1]
-    hotspot=hotspot_parameters(material.loc[:,'HTCconv'].to_numpy(),area,T)
+    N_cells_internal=int(surface_data.iloc[3,1]/cell_length)
+    THcond_internal=np.full((1, N_cells_internal), material.loc[:,'Thermal conductivity'].to_numpy())
+    densityC_internal=np.full((1, N_cells_internal), material.loc[:,'DensityC'].to_numpy())
+    #external section
+    external_type=surface_data.iloc[4,1]
+    material=materials_data.loc[materials_data['Material'] == external_type]
+    N_cells_external=int(surface_data.iloc[5,1]/cell_length)
+    THcond_external=np.full((1, N_cells_external), material.loc[:,'Thermal conductivity'].to_numpy())
+    densityC_external=np.full((1,N_cells_external), material.loc[:,'DensityC'].to_numpy())
+    #append arrays
+    THcond=np.append(THcond_internal,THcond_external)
+    densityC=np.append(densityC_internal,densityC_external)
+    N_cells=N_cells_internal+N_cells_external
+    thickness=(surface_data.iloc[3,1]+surface_data.iloc[5,1])/100 #total thickness convert to m
+    hotspot=hotspot_parameters(THcond[0:N_cells-1],material.loc[:,'HTCconv'].to_numpy(),densityC[0:N_cells-1],thickness,surface_data.iloc[1,1],N_cells,room.T_room,surface_data.iloc[6,1])
     return hotspot
 
 def WindowsSurface(surface_data,materials_data,room):
@@ -74,7 +87,7 @@ def ReadInParameters(filename):
     windows_upper=WindowsSurface(surface_data,materials_data,upper)
         #HOTSPOT
     surface_data=data.iloc[0:7,4:6]
-    hotspot_upper=HotSpot(surface_data,materials_data)
+    hotspot_upper=HotSpot(surface_data,materials_data,upper)
     #internals
     surface_data=data.iloc[0:7,2:4]
     internals_upper=Internals(surface_data,materials_data,upper)
@@ -95,7 +108,7 @@ def ReadInParameters(filename):
     windows_middle=WindowsSurface(surface_data,materials_data,middle)
     #HOTSPOT
     surface_data=data.iloc[18:32,4:6]
-    hotspot_middle=HotSpot(surface_data,materials_data)
+    hotspot_middle=HotSpot(surface_data,materials_data,middle)
     #internals
     surface_data=data.iloc[18:25,2:4]
     internals_middle=Internals(surface_data,materials_data,middle)
@@ -119,7 +132,7 @@ def ReadInParameters(filename):
     output_surface_array_lower=[roof_lower,wall_lower,floor,windows_lower]
     #HOTSPOT
     surface_data=data.iloc[36:43,4:6]
-    hotspot_lower=HotSpot(surface_data,materials_data)
+    hotspot_lower=HotSpot(surface_data,materials_data,lower)
     #internals
     surface_data=data.iloc[36:43,2:4]
     internals_lower=Internals(surface_data,materials_data,lower)

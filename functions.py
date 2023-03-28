@@ -80,17 +80,34 @@ def do_internals_in_room(internal,T_room,t_step,T_exterior):
     internal.T_array=internal.T_array+calculate_Tchange_surface(internal,t_step,Qin_xarray)
     return [Qout_room_to_internal,internal]
 
-def do_hotspots_in_room(hotspot,T_room,t_step):
-    #calculate Qout for room/surface boundary - CONVECTIVE - need radiative too??
-    Qout_room_to_hotspot=calculate_Qout_convective(hotspot.HTconv,hotspot.area,T_room,hotspot.T)
+def do_hotspots_in_room(hotspot,t_step,T_exterior):
+    #treat hotspot like composite surface except for extra fixed varibale 'airbyhotspot' which takes the place of T_room
+    #calculate Qout for room/surface boundary, which then is subtracted from the Q in to the room 
+    Qout_room_to_hotspot=calculate_Qout_convective(hotspot.HTconv,hotspot.area,hotspot.airbyhotspot,hotspot.T_array[0])
+    hotspot.Qout_array=calculate_Qout_conductive_surface(hotspot)
+    Qin_xarray=np.append(Qout_room_to_hotspot,hotspot.Qout_array[0:hotspot.N_cells-2])
+    #update surface interior temperatures
+    hotspot.T_array=hotspot.T_array+np.append(calculate_Tchange_surface(hotspot,t_step,Qin_xarray),[0])
+    hotspot.T_array[-1]=T_exterior
     return Qout_room_to_hotspot
 
 class hotspot_parameters:
     #class related to the input parameters on the DMD
-    def __init__(self,HTconv,area,T):
+    def __init__(self,THcond,HTconv,densityC,thickness,area,N_cells,initial_T,airbyhotspot):
         self.HTconv= HTconv
         self.area=area
-        self.T=T 
+        self.THcond = THcond  #can be array for multi material
+        self.HTconv= HTconv
+        self.densityC= densityC # array for multi material
+        self.thickness =thickness #this is TOTAL THICKNESS
+        self.area=area
+        self.N_cells=N_cells
+        self.initial_T=initial_T
+        self.cell_length=self.thickness/self.N_cells
+        self.volume_cell=self.cell_length*self.area
+        self.T_array=np.full([self.N_cells ],self.initial_T )
+        self.Qout_array=np.full([self.N_cells ],0 )
+        self.airbyhotspot=airbyhotspot
 
 class output_surface_parameters:
     #class related to the input parameters on the DMD
