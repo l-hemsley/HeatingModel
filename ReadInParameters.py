@@ -60,11 +60,13 @@ def HotSpot(surface_data,materials_data,room):
     return hotspot
 
 def WindowsSurface(surface_data,materials_data,room):
+    #SOMETHING WIERD WITH WINDOWS
     #single glazing
     internal_type=surface_data.iloc[2,1]
     material=materials_data.loc[materials_data['Material'] == internal_type]
-    thickness=surface_data.iloc[5,1]
-    N_cells=10
+    thickness=surface_data.iloc[5,1]/100
+    N_cells=int(100*thickness/cell_length)
+    #print(N_cells)
     window=output_surface_parameters(material.loc[:,'Thermal conductivity'].to_numpy(),material.loc[:,'HTCconv'].to_numpy(), material.loc[:,'DensityC'].to_numpy(),thickness,surface_data.iloc[1,1],N_cells,room.T_room,surface_data.iloc[4,1])
     return window
 
@@ -145,6 +147,6 @@ def ReadInParameters(filename):
     hotspots=[hotspot_upper,hotspot_middle,hotspot_lower]
     internals=[internals_upper,internals_middle,internals_lower]
     rooms=[upper,middle,lower]
-    output_surfaces=[output_surface_array_lower,output_surface_array_middle,output_surface_array_upper]
+    output_surfaces=[output_surface_array_upper,output_surface_array_middle,output_surface_array_lower]
     
     return [rooms,output_surfaces,T_target,T_exterior,hotspots,internals]
