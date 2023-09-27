@@ -13,6 +13,7 @@ def  CompositeMaterialSurface(surface_data, materials_data,room):
     N_cells_internal=int(surface_data.iloc[3,1]/cell_length)
     THcond_internal=np.full((1, N_cells_internal), material.loc[:,'Thermal conductivity'].to_numpy())
     densityC_internal=np.full((1, N_cells_internal), material.loc[:,'DensityC'].to_numpy())
+    HTC_internal=material.loc[:,'HTCconv'].to_numpy()
     #external section
     external_type=surface_data.iloc[4,1]
     material=materials_data.loc[materials_data['Material'] == external_type]
@@ -22,9 +23,10 @@ def  CompositeMaterialSurface(surface_data, materials_data,room):
     #append arrays
     THcond=np.append(THcond_internal,THcond_external)
     densityC=np.append(densityC_internal,densityC_external)
-    N_cells=N_cells_internal+N_cells_external
+    N_cells=1+N_cells_internal+N_cells_external
+    #N_cells is +1 to account for the last cell being set to zero and cell data being at the inward side of the cell
     thickness=(surface_data.iloc[3,1]+surface_data.iloc[5,1])/100 #total thickness convert to m
-    surface=output_surface_parameters(THcond[0:N_cells-1],material.loc[:,'HTCconv'].to_numpy(),densityC[0:N_cells-1],thickness,surface_data.iloc[1,1],N_cells,room.T_room,surface_data.iloc[6,1])
+    surface=output_surface_parameters(THcond[0:N_cells-1],HTC_internal,densityC[0:N_cells-1],thickness,surface_data.iloc[1,1],N_cells,room.T_room,surface_data.iloc[6,1])
     return surface
 
 def Internals(surface_data, materials_data,room): #we can treat internals as just normal surface class
